@@ -27,3 +27,7 @@ async def list_tech_tickets(tech_id: str):
 
 async def list_all_tickets():
     return await db["tickets"].find().to_list(100)
+
+# Busca un técnico disponible
+async def get_available_technician():
+    return await db["technicians"].find_one({"status": "active"})

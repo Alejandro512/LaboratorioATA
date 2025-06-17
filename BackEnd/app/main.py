@@ -10,13 +10,9 @@ from app.routers import (
 
 app = FastAPI(title="Sensor Monitoring API")
 
-# Registrar routers con prefix SOLO SI el router NO lo tiene internamente:
 app.include_router(administrator_router.router, prefix="/administrators", tags=["Administrators"])
 app.include_router(auth_router.router, prefix="/auth", tags=["Auth"])
 app.include_router(technician_router.router, prefix="/technicians", tags=["Technicians"])
 app.include_router(user_router.router, prefix="/users", tags=["Users"])
-
-# ⚠️ sensor_routes YA TIENE prefix="/sensors" → NO se pone aquí:
 app.include_router(sensor_routes.router)
-
 app.include_router(ticket_router.router, prefix="/tickets", tags=["Tickets"])

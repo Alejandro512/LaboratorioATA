@@ -1,11 +1,9 @@
-# app/models/ticket_model.py
-
 from datetime import datetime
 
 def ticket_document(data: dict) -> dict:
     return {
         "requesterId": data["requesterId"],
-        "assignedTechId": data.get("assignedTechId"),  # puede ser None al crear
+        "assignedTechId": data.get("assignedTechId"),  
         "alertId": data.get("alertId"),  # opcional
         "subject": data["subject"],
         "description": data["description"],

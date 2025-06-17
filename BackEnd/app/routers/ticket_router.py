@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.schemas.ticket_schema import TicketCreate, TicketUpdate, TicketOut
 from app.crud import ticket_crud
-from app.utils.dependencies import get_current_user
+from app.utils.dependencies import get_current_user, get_current_user_db
 from app.utils.roles import is_user, is_technician, is_admin
 
 from bson import ObjectId
@@ -11,14 +11,31 @@ from bson import ObjectId
 router = APIRouter()
 
 @router.post("/", response_model=dict)
-async def create_ticket(data: TicketCreate, current_user=Depends(get_current_user)):
+async def create_ticket(
+    data: TicketCreate,
+    current_user=Depends(get_current_user_db)  # 👈 usa el nuevo que consulta Mongo
+):
     if not is_user(current_user) and not is_admin(current_user):
         raise HTTPException(403, "Solo usuario o admin pueden crear tickets")
-    # Validar que requester sea el mismo user (si no es admin)
-    if is_user(current_user) and data.requesterId != current_user["id"]:
-        raise HTTPException(403, "No puedes crear tickets para otro usuario")
+    # Ahora current_user tiene id y role REAL del Mongo:
+    current_user_id = str(current_user["_id"])
+    # Usuario normal: solo para sí mismo, no puede forzar técnico
+    if is_user(current_user):
+        if str(data.requesterId) != current_user_id:
+            raise HTTPException(403, "No puedes crear tickets para otro usuario")
+        data.assignedTechId = None  # ignora si manda uno
+    # Asignar técnico automáticamente si no lo manda admin:
+    if not data.assignedTechId:
+        tech = await ticket_crud.get_available_technician()
+        if not tech:
+            raise HTTPException(503, "No hay técnicos disponibles")
+        data.assignedTechId = str(tech["_id"])
     new_id = await ticket_crud.create_ticket(data.dict())
-    return {"id": new_id, "message": "Ticket creado correctamente"}
+    return {
+        "id": new_id,
+        "message": f"Ticket creado y asignado a técnico {data.assignedTechId}"
+    }
+
 
 @router.put("/{ticket_id}", response_model=dict)
 async def update_ticket(ticket_id: str, updates: TicketUpdate, current_user=Depends(get_current_user)):

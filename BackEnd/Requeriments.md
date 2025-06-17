@@ -40,3 +40,17 @@ usuario Administrador para probar:
   "password": "clave1234"   
 }
 ```
+
+## creacion de sensor para usuario
+```
+{
+  "serial": "SN-12345",
+  "type": "humidity",
+  "location": "Bodega Central",
+  "ownerUserId": "6848624415b166c895fc4783",
+  "thresholds": {
+    "min": 20,
+    "max": 70
+  }
+}
+```

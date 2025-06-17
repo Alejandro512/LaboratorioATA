@@ -47,9 +47,15 @@ async def update_sensor(sensor_id: str, updates: dict, actor_id: str, actor_role
 async def delete_sensor(sensor_id: str, actor_id: str, actor_role: str):
     result = await db["sensors"].delete_one({"_id": ObjectId(sensor_id)})
     if result.deleted_count > 0:
-        await log_sensor_action(sensor_id=sensor_id, action="deleted", actor_id=actor_id, actor_role=actor_role)
+        await log_sensor_action(
+            sensor_id=sensor_id,
+            action="deleted",
+            actor_id=actor_id,
+            actor_role=actor_role
+        )
         return True
     return False
+
 
 async def get_sensor_by_id(sensor_id: str):
     return await db["sensors"].find_one({"_id": ObjectId(sensor_id)})
